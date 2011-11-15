@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<?pde version="3.6"?>
+
+<target name="org.javakontor.osgi.ds.apt.targetplatform" sequenceNumber="4">
+<locations>
+<location path="${eclipse_home}" type="Profile"/>
+<location path="${project_loc:org.javakontor.osgi.ds.apt.targetplatform}/biz.aQute.bnd.annotation" type="Directory"/>
+</locations>
+</target>

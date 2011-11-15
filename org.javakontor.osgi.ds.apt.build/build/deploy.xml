@@ -1,0 +1,129 @@
+<project name="deploy"
+         basedir="."
+         default="deploy"
+         xmlns:ant4eclipse="antlib:org.ant4eclipse"
+         xmlns:antcontrib="antlib:net.sf.antcontrib">
+
+	<import file="${basedir}/common-definitions.xml" />
+
+	<!-- ================================= 
+          target: deploy              
+         ================================= -->
+	<target name="deploy">
+
+		<echo>Deploy to '${deploy-dir}'</echo>
+
+		<!-- step 1: export bundlemaker -->
+		<delete dir="${deploy-dir}/ds.apt" quiet="true" />
+		<mkdir dir="${deploy-dir}/ds.apt" />
+
+		<buildFeature workspaceId="workspace"
+		              projectName="org.javakontor.osgi.ds.apt.feature"
+		              targetPlatformId="target.platform"
+		              destination="${deploy-dir}/ds.apt"
+		              clearDestination="true"
+		              defaultCompilerOptionsFile="${basedir}/org.eclipse.jdt.core.preferences"
+		              debug="true" />
+		
+		<!-- -->
+		<createP2Repo eclipseDir="${eclipse.install.dir}"
+		              sourceDir="${deploy-dir}/ds.apt"
+		              repositoryDir="${deploy-dir}/ds.apt-repo"
+		              categoryDefinition="${basedir}/category.xml" />
+
+	</target>
+
+	<!-- ================================= 
+          target: upload-development              
+         ================================= -->
+	<!-- target name="upload-development" depends="deploy-bundlemaker">
+
+		  <ftp action="del"
+		       server="ftp.wuetherich.com"
+		       userid="wuekxrys2"
+		       password="${ftp.pwd}">
+		    <fileset>
+		      <include name="**/*"/>
+		    </fileset>
+		  </ftp>
+		
+		<ftp server="ftp.wuetherich.com"
+		     userid="wuekxrys2"
+		     password="${ftp.pwd}"
+		     verbose="true">
+			<fileset dir="${bundlemaker-deploy-dir}/bundlemaker-repo" />
+		</ftp>
+
+	</target -->
+	
+	<!-- = = = = = = = = = = = = = = = = =
+          macrodef: createP2Repo          
+         = = = = = = = = = = = = = = = = = -->
+	<macrodef name="createP2Repo">
+		<attribute name="eclipseDir" />
+		<attribute name="sourceDir" />
+		<attribute name="repositoryDir" />
+		<attribute name="categoryDefinition" />
+		<sequential>
+
+			<!-- store path to newest launcher JAR in path id 'newest.equinox.launcher.path.id' -->
+			<path id="newest.equinox.launcher.path.id">
+				<first count="1">
+					<sort>
+						<fileset dir="@{eclipseDir}/plugins"
+						         includes="**/org.eclipse.equinox.launcher_*.jar" />
+						<!-- Seems the default order is oldest > newest so we must reverse it.
+						The 'reverse' and 'date' comparators are in the internal antlib
+						org.apache.tools.ant.types.resources.comparators.
+						-->
+						<reverse xmlns="antlib:org.apache.tools.ant.types.resources.comparators">
+							<!-- 'date' inherits 'reverse's namespace -->
+							<date />
+						</reverse>
+					</sort>
+				</first>
+			</path>
+
+			<!-- turn the path into a property -->
+			<property name="equinox.launcher.jar.location"
+			          refid="newest.equinox.launcher.path.id" />
+
+			<!-- -->
+			<java failonerror="true"
+			      fork="true"
+			      jar="${equinox.launcher.jar.location}">
+				<arg value="-configuration" />
+				<arg value="${configuration.dir}" />
+				<arg value="-consolelog" />
+				<arg value="-application" />
+				<arg value="org.eclipse.equinox.p2.publisher.FeaturesAndBundlesPublisher" />
+				<arg value="-metadataRepository" />
+				<arg value="file://@{repositoryDir}" />
+				<arg value="-artifactRepository" />
+				<arg value="file://@{repositoryDir}" />
+				<arg value="-source" />
+				<arg value="@{sourceDir}" />
+				<arg value="-compress" />
+				<arg value="-publishArtifacts" />
+			</java>
+
+			<!-- -->
+			<java failonerror="true"
+			      fork="true"
+			      jar="${equinox.launcher.jar.location}">
+				<arg value="-configuration" />
+				<arg value="${configuration.dir}" />
+				<arg value="-consolelog" />
+				<arg value="-application" />
+				<arg value="org.eclipse.equinox.p2.publisher.CategoryPublisher" />
+				<arg value="-metadataRepository" />
+				<arg value="file://@{repositoryDir}" />
+				<arg value="-categoryDefinition" />
+				<arg value="file://@{categoryDefinition}" />
+				<arg value="-compress" />
+			</java>
+
+		</sequential>
+	</macrodef>
+
+</project>
