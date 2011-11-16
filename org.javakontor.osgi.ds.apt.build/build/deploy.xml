@@ -9,6 +9,8 @@
 	<!-- ================================= 
           target: deploy              
          ================================= -->
+	
+	<target name="deploy-and-upload" depends="deploy,upload" />
 	<target name="deploy">
 
 		<echo>Deploy to '${deploy-dir}'</echo>
@@ -36,25 +38,28 @@
 	<!-- ================================= 
           target: upload              
          ================================= -->
-	<!-- target name="upload" depends="deploy">
+	<target name="upload" depends="deploy" if="ftp.host">
 
+		<!--
 		  <ftp action="del"
-		       server="ftp.wuetherich.com"
-		       userid="wuekxrys2"
+		       server="${ftp.host}"
+		       userid="${ftp.user}"
 		       password="${ftp.pwd}">
 		    <fileset>
 		      <include name="**/*"/>
 		    </fileset>
 		  </ftp>
+		  -->
 		
-		<ftp server="ftp.wuetherich.com"
-		     userid="wuekxrys2"
+		<ftp server="${ftp.host}"
+		     userid="${ftp.user}"
 		     password="${ftp.pwd}"
+				remotedir="${ftp.remotedir}"
 		     verbose="true">
-			<fileset dir="${bundlemaker-deploy-dir}/bundlemaker-repo" />
+			<fileset dir="${deploy-dir}/ds.apt-repo" />
 		</ftp>
 
-	</target -->
+	</target>
 
 	<!-- = = = = = = = = = = = = = = = = =
           macrodef: createP2Repo          
