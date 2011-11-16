@@ -39,6 +39,11 @@
 		              repositoryDir="${deploy-dir}/ds.apt-repo"
 		              categoryDefinition="${basedir}/category.xml" />
 		
+		<!-- Create a zip containing the plugins and features for easier download -->
+		<zip destfile="${deploy-dir}/ds.apt.zip">
+			<fileset dir="${deploy-dir}" includes="ds.apt/**" />
+		</zip>
+		
 		<!-- Create an archived update site -->
 		<zip destfile="${deploy-dir}/ds.apt-updatesite.zip">
 			<fileset dir="${deploy-dir}/ds.apt-repo" includes="**/*" />
