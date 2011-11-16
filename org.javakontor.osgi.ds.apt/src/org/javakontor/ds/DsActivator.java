@@ -13,38 +13,34 @@ import org.osgi.framework.BundleContext;
 
 public class DsActivator implements BundleActivator {
 
-	@Override
-	public void start(BundleContext context) throws Exception {
-		System.out.println("DsActivator.start");
-		final DsResourceListener dsResourceListener = new DsResourceListener();
+  @Override
+  public void start(BundleContext context) throws Exception {
+    System.out.println("DsActivator.start");
+    final DsResourceListener dsResourceListener = DsResourceListener.get();
 
-		IWorkspace workspace = ResourcesPlugin.getWorkspace();
-		IProject[] projects = workspace.getRoot().getProjects();
-		for (IProject project : projects) {
-			IFolder osgiInfo = project.getFolder("OSGI-INF");
-			if ((osgiInfo != null) && osgiInfo.exists()) {
-				osgiInfo.accept(new IResourceVisitor() {
+    IWorkspace workspace = ResourcesPlugin.getWorkspace();
+    IProject[] projects = workspace.getRoot().getProjects();
+    for (IProject project : projects) {
+      IFolder osgiInfo = project.getFolder("OSGI-INF");
+      if ((osgiInfo != null) && osgiInfo.exists()) {
+        osgiInfo.accept(new IResourceVisitor() {
 
-					@Override
-					public boolean visit(IResource resource)
-							throws CoreException {
-						if (resource.getName().endsWith(".xml")) {
-							dsResourceListener.addObservedResource(resource
-									.getName());
-						}
-						return true;
-					}
-				});
-			}
-		}
-		ResourcesPlugin.getWorkspace().addResourceChangeListener(
-				dsResourceListener,
-				IResourceChangeEvent.PRE_DELETE
-						| IResourceChangeEvent.POST_CHANGE);
-	}
+          @Override
+          public boolean visit(IResource resource) throws CoreException {
+            if (resource.getName().endsWith(".xml")) {
+              dsResourceListener.addObservedResource(resource.getName());
+            }
+            return true;
+          }
+        });
+      }
+    }
+    ResourcesPlugin.getWorkspace().addResourceChangeListener(dsResourceListener,
+        IResourceChangeEvent.PRE_DELETE | IResourceChangeEvent.POST_CHANGE);
+  }
 
-	@Override
-	public void stop(BundleContext context) throws Exception {
-	}
+  @Override
+  public void stop(BundleContext context) throws Exception {
+  }
 
 }

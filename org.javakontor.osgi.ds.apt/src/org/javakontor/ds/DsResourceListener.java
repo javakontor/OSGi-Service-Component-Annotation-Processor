@@ -20,110 +20,103 @@ import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.internal.core.JavaProject;
 
 public class DsResourceListener implements IResourceChangeListener {
-	private static DsResourceListener singleton;
+  private static DsResourceListener singleton;
 
-	public static DsResourceListener get() {
-		return singleton;
-	}
+  public static synchronized DsResourceListener get() {
+    if (singleton == null) {
+      singleton = new DsResourceListener();
+    }
+    return singleton;
+  }
 
-	private Set<String> observedResources = new HashSet<String>();
+  private Set<String> observedResources = new HashSet<String>();
 
-	/**
-	 * Aus Performancegruenden werden nur bekannte Resourcen werden auch wieder
-	 * geloescht.
-	 * 
-	 * @param observedResource
-	 */
-	public void addObservedResource(String observedResource) {
-		String className = observedResource.replace('.', '/').substring(0,
-				observedResource.length() - 4)
-				+ ".class";
-		observedResources.add(className);
-	}
+  /**
+   * Aus Performancegruenden werden nur bekannte Resourcen werden auch wieder geloescht.
+   * 
+   * @param observedResource
+   */
+  public void addObservedResource(String observedResource) {
+    String className = observedResource.replace('.', '/').substring(0, observedResource.length() - 4) + ".class";
+    observedResources.add(className);
+  }
 
-	public DsResourceListener() {
-		singleton = this;
-	}
+  private DsResourceListener() {
 
-	@Override
-	public void resourceChanged(IResourceChangeEvent event) {
-		if (event.getType() == IResourceChangeEvent.POST_CHANGE) {
+  }
 
-			try {
-				event.getDelta().accept(new DsResourceDeltaVisitor());
-			} catch (CoreException e1) {
-				e1.printStackTrace();
-			}
-		}
-	}
+  @Override
+  public void resourceChanged(IResourceChangeEvent event) {
+    if (event.getType() == IResourceChangeEvent.POST_CHANGE) {
 
-	class DsResourceDeltaVisitor implements IResourceDeltaVisitor {
-		private IProject project;
+      try {
+        event.getDelta().accept(new DsResourceDeltaVisitor());
+      } catch (CoreException e1) {
+        e1.printStackTrace();
+      }
+    }
+  }
 
-		public DsResourceDeltaVisitor() {
-		}
+  class DsResourceDeltaVisitor implements IResourceDeltaVisitor {
+    private IProject project;
 
-		@Override
-		public boolean visit(IResourceDelta delta) throws CoreException {
-			switch (delta.getKind()) {
+    public DsResourceDeltaVisitor() {
+    }
 
-			case IResourceDelta.REMOVED:
+    @Override
+    public boolean visit(IResourceDelta delta) throws CoreException {
+      switch (delta.getKind()) {
 
-				if ((project != null) && JavaProject.hasJavaNature(project)) {
-					IJavaProject javaProject = JavaCore.create(project);
-					IPath outputLocation = javaProject.getOutputLocation();
-					if (outputLocation.isPrefixOf(delta.getResource()
-							.getFullPath())) {
-						IPath relativePath = delta.getResource().getFullPath()
-								.makeRelativeTo(outputLocation);
-						String className = relativePath.toString();
-						boolean isObserverd = observedResources
-								.contains(className);
-						if (className.endsWith(".class") && isObserverd) {
-							className = className.substring(0,
-									className.length() - 6);
-							String dsFilename = "OSGI-INF/"
-									+ className.replace('/', '.') + ".xml";
-							IFile dsFile = project.getFile(dsFilename);
+      case IResourceDelta.REMOVED:
 
-							if (dsFile.exists()) {
-								DeleteDsWorkspaceJob dsWorkspaceJob = new DeleteDsWorkspaceJob(
-										dsFile);
-								dsWorkspaceJob.schedule();
-							}
-						}
-					}
-				}
-				return true;
+        if ((project != null) && JavaProject.hasJavaNature(project)) {
+          IJavaProject javaProject = JavaCore.create(project);
+          IPath outputLocation = javaProject.getOutputLocation();
+          if (outputLocation.isPrefixOf(delta.getResource().getFullPath())) {
+            IPath relativePath = delta.getResource().getFullPath().makeRelativeTo(outputLocation);
+            String className = relativePath.toString();
+            boolean isObserverd = observedResources.contains(className);
+            if (className.endsWith(".class") && isObserverd) {
+              className = className.substring(0, className.length() - 6);
+              String dsFilename = "OSGI-INF/" + className.replace('/', '.') + ".xml";
+              IFile dsFile = project.getFile(dsFilename);
 
-			case IResourceDelta.CHANGED:
-				if (delta.getResource() instanceof IProject) {
-					project = (IProject) delta.getResource();
-				}
+              if (dsFile.exists()) {
+                DeleteDsWorkspaceJob dsWorkspaceJob = new DeleteDsWorkspaceJob(dsFile);
+                dsWorkspaceJob.schedule();
+              }
+            }
+          }
+        }
+        return true;
 
-				break;
-			}
-			return true;
-		}
-	}
+      case IResourceDelta.CHANGED:
+        if (delta.getResource() instanceof IProject) {
+          project = (IProject) delta.getResource();
+        }
 
-	class DeleteDsWorkspaceJob extends WorkspaceJob {
+        break;
+      }
+      return true;
+    }
+  }
 
-		private IFile dsFile;
+  class DeleteDsWorkspaceJob extends WorkspaceJob {
 
-		public DeleteDsWorkspaceJob(IFile dsFile) {
-			super("DeleteDsWorkspaceRunnable");
-			this.dsFile = dsFile;
-		}
+    private IFile dsFile;
 
-		@Override
-		public IStatus runInWorkspace(IProgressMonitor monitor)
-				throws CoreException {
-			if (dsFile.exists()) {
-				dsFile.delete(true, monitor);
-			}
-			return Status.OK_STATUS;
-		}
-	}
+    public DeleteDsWorkspaceJob(IFile dsFile) {
+      super("DeleteDsWorkspaceRunnable");
+      this.dsFile = dsFile;
+    }
+
+    @Override
+    public IStatus runInWorkspace(IProgressMonitor monitor) throws CoreException {
+      if (dsFile.exists()) {
+        dsFile.delete(true, monitor);
+      }
+      return Status.OK_STATUS;
+    }
+  }
 
 }
