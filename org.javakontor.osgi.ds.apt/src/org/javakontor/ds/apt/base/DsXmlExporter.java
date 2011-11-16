@@ -132,7 +132,9 @@ public class DsXmlExporter {
 		component.getContent().add(reference);
 		reference.setAttribute("policy", policy);
 		reference.setAttribute("cardinality", cardinality);
-		reference.setAttribute("target", target);
+		if (target != null && target.trim().isEmpty() == false) {
+			reference.setAttribute("target", target);
+		}
 		reference.setAttribute("name", name);
 		reference.setAttribute("interface", serviceInterface);
 		if (unbindMethodName != null) {
