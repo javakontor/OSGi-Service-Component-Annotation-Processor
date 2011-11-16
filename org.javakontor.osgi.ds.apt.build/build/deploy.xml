@@ -24,7 +24,7 @@
 		              clearDestination="true"
 		              defaultCompilerOptionsFile="${basedir}/org.eclipse.jdt.core.preferences"
 		              debug="true" />
-		
+
 		<!-- -->
 		<createP2Repo eclipseDir="${eclipse.install.dir}"
 		              sourceDir="${deploy-dir}/ds.apt"
@@ -34,9 +34,9 @@
 	</target>
 
 	<!-- ================================= 
-          target: upload-development              
+          target: upload              
          ================================= -->
-	<!-- target name="upload-development" depends="deploy-bundlemaker">
+	<!-- target name="upload" depends="deploy">
 
 		  <ftp action="del"
 		       server="ftp.wuetherich.com"
@@ -55,7 +55,7 @@
 		</ftp>
 
 	</target -->
-	
+
 	<!-- = = = = = = = = = = = = = = = = =
           macrodef: createP2Repo          
          = = = = = = = = = = = = = = = = = -->
