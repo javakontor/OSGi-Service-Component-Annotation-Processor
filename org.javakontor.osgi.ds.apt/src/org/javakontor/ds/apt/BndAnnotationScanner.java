@@ -53,8 +53,12 @@ public class BndAnnotationScanner extends BaseAnnotationScanner {
 			}
 			List<String> interfaces = new ArrayList<String>();
 			if (provideValues.length == 0) {
+				
+				// Service interfaces, the default is all directly implemented interfaces
+				if (annotationInfos.getStringValue("service") == null) {
 				for (TypeMirror mirror : e.getInterfaces()) {
 					interfaces.add(mirror.toString());
+				}
 				}
 			} else {
 				for (String provideInterface : provideValues) {

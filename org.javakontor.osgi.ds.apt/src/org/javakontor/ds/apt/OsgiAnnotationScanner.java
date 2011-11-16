@@ -34,7 +34,7 @@ public class OsgiAnnotationScanner extends BaseAnnotationScanner {
 		if (componentAnnotation != null) {
 			ElementInfos elementInfos = new ElementInfos(e);
 			AnnotationInfos annotationInfos = elementInfos.getAnnotationInfos(Component.class);
-			String[] provideValues = annotationInfos.getArrayAsStrings("provide");
+			String[] provideValues = annotationInfos.getArrayAsStrings("service");
 
 			dsXmlExporter.setClassName(e.toString());
 			String name = componentAnnotation.name();
@@ -46,8 +46,14 @@ public class OsgiAnnotationScanner extends BaseAnnotationScanner {
 
 			List<String> interfaces = new ArrayList<String>();
 			if (provideValues.length == 0) {
-				for (TypeMirror mirror : e.getInterfaces()) {
-					interfaces.add(mirror.toString());
+				
+				// If no service should be registered, the empty value {} must be specified.
+				// If not specified, the service types for this Component are all the directly implemented interfaces of the class
+				// being annotated.
+				if (annotationInfos.getStringValue("service") == null) {
+					for (TypeMirror mirror : e.getInterfaces()) {
+						interfaces.add(mirror.toString());
+					}
 				}
 			} else {
 				for (String provideInterface : provideValues) {
