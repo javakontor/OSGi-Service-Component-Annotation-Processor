@@ -38,6 +38,11 @@
 		              sourceDir="${deploy-dir}/ds.apt"
 		              repositoryDir="${deploy-dir}/ds.apt-repo"
 		              categoryDefinition="${basedir}/category.xml" />
+		
+		<!-- Create an archived update site -->
+		<zip destfile="${deploy-dir}/ds.apt-updatesite.zip">
+			<fileset dir="${deploy-dir}/ds.apt-repo" includes="**/*" />
+		</zip>
 
 	</target>
 
