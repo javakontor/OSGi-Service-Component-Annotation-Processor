@@ -29,14 +29,15 @@ public class DsResourceListener implements IResourceChangeListener {
 	private Set<String> observedResources = new HashSet<String>();
 
 	/**
-	 * Aus Performancegruenden werden nur bekannte Resourcen werden auch wieder geloescht.
-	 *
-	 * @param  observedResource
+	 * Aus Performancegruenden werden nur bekannte Resourcen werden auch wieder
+	 * geloescht.
+	 * 
+	 * @param observedResource
 	 */
 	public void addObservedResource(String observedResource) {
-		String className =
-			observedResource.replace('.', '/').substring(0, observedResource.length() - 4)
-			+ ".class";
+		String className = observedResource.replace('.', '/').substring(0,
+				observedResource.length() - 4)
+				+ ".class";
 		observedResources.add(className);
 	}
 
@@ -66,38 +67,41 @@ public class DsResourceListener implements IResourceChangeListener {
 		public boolean visit(IResourceDelta delta) throws CoreException {
 			switch (delta.getKind()) {
 
-				case IResourceDelta.REMOVED :
+			case IResourceDelta.REMOVED:
 
-					if ((project != null) && JavaProject.hasJavaNature(project)) {
-						IJavaProject javaProject = JavaCore.create(project);
-						IPath outputLocation = javaProject.getOutputLocation();
-						if (outputLocation.isPrefixOf(delta.getResource().getFullPath())) {
-							IPath relativePath =
-								delta.getResource().getFullPath().makeRelativeTo(outputLocation);
-							String className = relativePath.toString();
-							boolean isObserverd = observedResources.contains(className);
-							if (className.endsWith(".class") && isObserverd) {
-								className = className.substring(0, className.length() - 6);
-								String dsFilename =
-									"OSGI-INF/" + className.replace('/', '.') + ".xml";
-								IFile dsFile = project.getFile(dsFilename);
+				if ((project != null) && JavaProject.hasJavaNature(project)) {
+					IJavaProject javaProject = JavaCore.create(project);
+					IPath outputLocation = javaProject.getOutputLocation();
+					if (outputLocation.isPrefixOf(delta.getResource()
+							.getFullPath())) {
+						IPath relativePath = delta.getResource().getFullPath()
+								.makeRelativeTo(outputLocation);
+						String className = relativePath.toString();
+						boolean isObserverd = observedResources
+								.contains(className);
+						if (className.endsWith(".class") && isObserverd) {
+							className = className.substring(0,
+									className.length() - 6);
+							String dsFilename = "OSGI-INF/"
+									+ className.replace('/', '.') + ".xml";
+							IFile dsFile = project.getFile(dsFilename);
 
-								if (dsFile.exists()) {
-									DeleteDsWorkspaceJob dsWorkspaceJob =
-										new DeleteDsWorkspaceJob(dsFile);
-									dsWorkspaceJob.schedule();
-								}
+							if (dsFile.exists()) {
+								DeleteDsWorkspaceJob dsWorkspaceJob = new DeleteDsWorkspaceJob(
+										dsFile);
+								dsWorkspaceJob.schedule();
 							}
 						}
 					}
-					return true;
+				}
+				return true;
 
-				case IResourceDelta.CHANGED :
-					if (delta.getResource() instanceof IProject) {
-						project = (IProject) delta.getResource();
-					}
+			case IResourceDelta.CHANGED:
+				if (delta.getResource() instanceof IProject) {
+					project = (IProject) delta.getResource();
+				}
 
-					break;
+				break;
 			}
 			return true;
 		}
@@ -113,7 +117,8 @@ public class DsResourceListener implements IResourceChangeListener {
 		}
 
 		@Override
-		public IStatus runInWorkspace(IProgressMonitor monitor) throws CoreException {
+		public IStatus runInWorkspace(IProgressMonitor monitor)
+				throws CoreException {
 			if (dsFile.exists()) {
 				dsFile.delete(true, monitor);
 			}

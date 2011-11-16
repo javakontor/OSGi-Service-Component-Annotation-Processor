@@ -9,22 +9,22 @@ import java.lang.annotation.Target;
 @Target(value = ElementType.TYPE)
 public @interface Component {
 
-	String name() default "";
+  String name() default "";
 
-	boolean enabled() default true;
+  boolean enabled() default true;
 
-	boolean immediate() default false;
+  boolean immediate() default false;
 
-	String factory() default "";
+  String factory() default "";
 
-	boolean servicefactory() default false;
+  boolean servicefactory() default false;
 
-	ConfigurationPolicy configurationPolicy() default ConfigurationPolicy.OPTIONAL;
+  ConfigurationPolicy configurationPolicy() default ConfigurationPolicy.OPTIONAL;
 
-	Class<?>[] service() default {};
+  Class<?>[] service() default {};
 
-	String[] property() default {};
+  String[] property() default {};
 
-	String[] properties() default {};
+  String[] properties() default {};
 
 }

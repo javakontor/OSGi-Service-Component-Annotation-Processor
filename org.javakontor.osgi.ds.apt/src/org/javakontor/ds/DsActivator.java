@@ -23,24 +23,24 @@ public class DsActivator implements BundleActivator {
 		for (IProject project : projects) {
 			IFolder osgiInfo = project.getFolder("OSGI-INF");
 			if ((osgiInfo != null) && osgiInfo.exists()) {
-				osgiInfo.accept(
-					new IResourceVisitor() {
+				osgiInfo.accept(new IResourceVisitor() {
 
-						@Override
-						public boolean visit(IResource resource) throws CoreException {
-							if (resource.getName().endsWith(".xml")) {
-								dsResourceListener.addObservedResource(resource.getName());
-							}
-							return true;
+					@Override
+					public boolean visit(IResource resource)
+							throws CoreException {
+						if (resource.getName().endsWith(".xml")) {
+							dsResourceListener.addObservedResource(resource
+									.getName());
 						}
+						return true;
 					}
-				);
+				});
 			}
 		}
 		ResourcesPlugin.getWorkspace().addResourceChangeListener(
-			dsResourceListener,
-			IResourceChangeEvent.PRE_DELETE | IResourceChangeEvent.POST_CHANGE
-		);
+				dsResourceListener,
+				IResourceChangeEvent.PRE_DELETE
+						| IResourceChangeEvent.POST_CHANGE);
 	}
 
 	@Override

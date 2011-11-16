@@ -3,5 +3,9 @@
    <feature url="features/org.javakontor.osgi.ds.apt.feature_1.0.0.qualifier.jar" id="org.javakontor.osgi.ds.apt.feature" version="1.0.0.qualifier">
       <category name="Service Component Annotation Processor"/>
    </feature>
-   <category-def name="Service Component Annotation Processor" label="Service Component Annotation Processor"/>
+   <category-def name="Service Component Annotation Processor" label="Service Component Annotation Processor">
+      <description>
+         A annotation processor (APT) that generates Component Descriptions for OSGi Declarative Service Components
+      </description>
+   </category-def>
 </site>

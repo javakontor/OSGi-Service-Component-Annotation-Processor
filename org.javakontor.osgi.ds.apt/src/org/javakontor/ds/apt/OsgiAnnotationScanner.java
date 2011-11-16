@@ -33,8 +33,10 @@ public class OsgiAnnotationScanner extends BaseAnnotationScanner {
 
 		if (componentAnnotation != null) {
 			ElementInfos elementInfos = new ElementInfos(e);
-			AnnotationInfos annotationInfos = elementInfos.getAnnotationInfos(Component.class);
-			String[] provideValues = annotationInfos.getArrayAsStrings("service");
+			AnnotationInfos annotationInfos = elementInfos
+					.getAnnotationInfos(Component.class);
+			String[] provideValues = annotationInfos
+					.getArrayAsStrings("service");
 
 			dsXmlExporter.setClassName(e.toString());
 			String name = componentAnnotation.name();
@@ -46,9 +48,11 @@ public class OsgiAnnotationScanner extends BaseAnnotationScanner {
 
 			List<String> interfaces = new ArrayList<String>();
 			if (provideValues.length == 0) {
-				
-				// If no service should be registered, the empty value {} must be specified.
-				// If not specified, the service types for this Component are all the directly implemented interfaces of the class
+
+				// If no service should be registered, the empty value {} must
+				// be specified.
+				// If not specified, the service types for this Component are
+				// all the directly implemented interfaces of the class
 				// being annotated.
 				if (annotationInfos.getStringValue("service") == null) {
 					for (TypeMirror mirror : e.getInterfaces()) {
@@ -66,11 +70,9 @@ public class OsgiAnnotationScanner extends BaseAnnotationScanner {
 					}
 					if (!foundInterface) {
 						processingEnv.getMessager().printMessage(
-							Diagnostic.Kind.ERROR,
-							"Class does not implement declared interface \"" + provideInterface
-							+ "\"",
-							e
-						);
+								Diagnostic.Kind.ERROR,
+								"Class does not implement declared interface \""
+										+ provideInterface + "\"", e);
 						errorsFound = true;
 					}
 				}
@@ -78,23 +80,22 @@ public class OsgiAnnotationScanner extends BaseAnnotationScanner {
 			if (interfaces.size() > 0) {
 				dsXmlExporter.addServices(interfaces);
 			}
-			dsXmlExporter.setComponentAttribute("factory", componentAnnotation.factory());
-			dsXmlExporter.setComponentAttribute("activate", getActivateMethod(e, Activate.class));
-			dsXmlExporter.setComponentAttribute(
-				"deactivate",
-				getDeactivateMethod(e, Deactivate.class)
-			);
+			dsXmlExporter.setComponentAttribute("factory",
+					componentAnnotation.factory());
+			dsXmlExporter.setComponentAttribute("activate",
+					getActivateMethod(e, Activate.class));
+			dsXmlExporter.setComponentAttribute("deactivate",
+					getDeactivateMethod(e, Deactivate.class));
 
 			Boolean immediate = componentAnnotation.immediate();
 			if (immediate) {
 				dsXmlExporter.setComponentAttribute("immediate", "true");
 			}
-			ConfigurationPolicy configurationPolicy = componentAnnotation.configurationPolicy();
+			ConfigurationPolicy configurationPolicy = componentAnnotation
+					.configurationPolicy();
 			if (configurationPolicy != ConfigurationPolicy.OPTIONAL) {
-				dsXmlExporter.setComponentAttribute(
-					"configuration-policy",
-					configurationPolicy.value()
-				);
+				dsXmlExporter.setComponentAttribute("configuration-policy",
+						configurationPolicy.value());
 			}
 
 			for (String property : componentAnnotation.properties()) {
@@ -112,10 +113,12 @@ public class OsgiAnnotationScanner extends BaseAnnotationScanner {
 			Reference referenceAnnotation = e.getAnnotation(Reference.class);
 
 			if (referenceAnnotation != null) {
-				String serviceInterface = e.getParameters().get(0).asType().toString();
+				String serviceInterface = e.getParameters().get(0).asType()
+						.toString();
 
 				ElementInfos elementInfos = new ElementInfos(e);
-				AnnotationInfos annotationInfos = elementInfos.getAnnotationInfos(Reference.class);
+				AnnotationInfos annotationInfos = elementInfos
+						.getAnnotationInfos(Reference.class);
 				String serviceName = annotationInfos.getStringValue("service");
 				if (serviceName != null) {
 					System.out.println("Reference service: " + serviceName);
@@ -124,16 +127,14 @@ public class OsgiAnnotationScanner extends BaseAnnotationScanner {
 
 				String cardinality = referenceAnnotation.cardinality().value();
 				String policy = referenceAnnotation.policy().value();
-				Element unbindMethod = getUnbindMethod(e, referenceAnnotation.unbind());
-				dsXmlExporter.addReference(
-					serviceInterface,
-					policy,
-					cardinality,
-					referenceAnnotation.target(),
-					referenceAnnotation.name(),
-					e.getSimpleName().toString(),
-					unbindMethod != null ? unbindMethod.getSimpleName().toString() : null
-				);
+				Element unbindMethod = getUnbindMethod(e,
+						referenceAnnotation.unbind());
+				dsXmlExporter.addReference(serviceInterface, policy,
+						cardinality, referenceAnnotation.target(),
+						referenceAnnotation.name(), e.getSimpleName()
+								.toString(),
+						unbindMethod != null ? unbindMethod.getSimpleName()
+								.toString() : null);
 
 			}
 		}

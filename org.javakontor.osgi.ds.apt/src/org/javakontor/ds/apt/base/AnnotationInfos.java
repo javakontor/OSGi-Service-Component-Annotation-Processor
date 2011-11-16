@@ -15,10 +15,8 @@ public class AnnotationInfos {
 
 	public AnnotationInfos(Annotation annotation, AnnotationMirror mirror) {
 		this.annotation = annotation;
-		for (
-			Map.Entry<? extends ExecutableElement, ? extends AnnotationValue> entry
-			: mirror.getElementValues().entrySet()
-		) {
+		for (Map.Entry<? extends ExecutableElement, ? extends AnnotationValue> entry : mirror
+				.getElementValues().entrySet()) {
 			Object value = entry.getValue().getValue();
 			String attributeName = entry.getKey().getSimpleName().toString();
 			values.put(attributeName, value);

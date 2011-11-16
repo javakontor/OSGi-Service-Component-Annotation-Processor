@@ -12,11 +12,11 @@ import java.lang.annotation.Target;
 @Target(value = ElementType.FIELD)
 public @interface Property {
 
-	/**
-	 * use name() if provided;
-	 * 
-	 * use target final static String field name otherwise
-	 */
-	String name() default "";
+  /**
+   * use name() if provided;
+   * 
+   * use target final static String field name otherwise
+   */
+  String name() default "";
 
 }

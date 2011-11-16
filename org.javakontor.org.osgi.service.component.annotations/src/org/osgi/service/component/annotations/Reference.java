@@ -9,16 +9,16 @@ import java.lang.annotation.Target;
 @Target(value = ElementType.METHOD)
 public @interface Reference {
 
-	String name() default "";
+  String name() default "";
 
-	Class<?> service() default Object.class;
+  Class<?> service() default Object.class;
 
-	ReferenceCardinality cardinality() default ReferenceCardinality.MANDATORY;
+  ReferenceCardinality cardinality() default ReferenceCardinality.MANDATORY;
 
-	ReferencePolicy policy() default ReferencePolicy.STATIC;
+  ReferencePolicy policy() default ReferencePolicy.STATIC;
 
-	String target() default "";
+  String target() default "";
 
-	String unbind() default "";
+  String unbind() default "";
 
 }
