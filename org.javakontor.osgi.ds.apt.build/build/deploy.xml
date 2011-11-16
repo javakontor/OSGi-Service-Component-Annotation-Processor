@@ -10,7 +10,7 @@
           target: deploy              
          ================================= -->
 	
-	<target name="deploy-and-upload" depends="deploy,upload" />
+	<target name="deploy-and-upload" depends="deploy,ftp-upload,scp-upload" />
 	<target name="deploy">
 
 		<echo>Deploy to '${deploy-dir}'</echo>
@@ -36,9 +36,9 @@
 	</target>
 
 	<!-- ================================= 
-          target: upload              
+          target: ftp-upload              
          ================================= -->
-	<target name="upload" depends="deploy" if="ftp.host">
+	<target name="ftp-upload" depends="deploy" if="ftp.host">
 
 		<!--
 		  <ftp action="del"
@@ -61,6 +61,17 @@
 
 	</target>
 
+	<!-- ================================= 
+          target: scp-upload              
+         ================================= -->
+	<target name="scp-upload" depends="deploy" if="scp.todir">
+		<scp todir="${scp.todir}">
+			<fileset dir="${deploy-dir}/ds.apt-repo" />
+		</scp>
+
+	</target>
+	
+	
 	<!-- = = = = = = = = = = = = = = = = =
           macrodef: createP2Repo          
          = = = = = = = = = = = = = = = = = -->
