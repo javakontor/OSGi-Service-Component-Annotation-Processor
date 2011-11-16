@@ -65,7 +65,7 @@
           target: scp-upload              
          ================================= -->
 	<target name="scp-upload" depends="deploy" if="scp.todir">
-		<scp todir="${scp.todir}">
+		<scp todir="${scp.todir}" trust="true">
 			<fileset dir="${deploy-dir}/ds.apt-repo" />
 		</scp>
 
