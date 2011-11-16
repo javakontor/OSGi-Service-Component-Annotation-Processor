@@ -7,10 +7,16 @@
 	<import file="${basedir}/common-definitions.xml" />
 
 	<!-- ================================= 
+          target: deploy-and-upload      
+          
+          Deployes (i.e. builds everythings and puts the update site on a remote
+          server)        
+         ================================= -->
+	<target name="deploy-and-upload" depends="deploy,_ftp-upload,_scp-upload" />
+
+	<!-- ================================= 
           target: deploy              
          ================================= -->
-	
-	<target name="deploy-and-upload" depends="deploy,ftp-upload,scp-upload" />
 	<target name="deploy">
 
 		<echo>Deploy to '${deploy-dir}'</echo>
@@ -36,9 +42,9 @@
 	</target>
 
 	<!-- ================================= 
-          target: ftp-upload              
+          target: _ftp-upload              
          ================================= -->
-	<target name="ftp-upload" depends="deploy" if="ftp.host">
+	<target name="_ftp-upload" if="ftp.host">
 
 		<!--
 		  <ftp action="del"
@@ -62,9 +68,9 @@
 	</target>
 
 	<!-- ================================= 
-          target: scp-upload              
+          target: _scp-upload              
          ================================= -->
-	<target name="scp-upload" depends="deploy" if="scp.todir">
+	<target name="_scp-upload" if="scp.todir">
 		<scp todir="${scp.todir}" trust="true">
 			<fileset dir="${deploy-dir}/ds.apt-repo" />
 		</scp>
