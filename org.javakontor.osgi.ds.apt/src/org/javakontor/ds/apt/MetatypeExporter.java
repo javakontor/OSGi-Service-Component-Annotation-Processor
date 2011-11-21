@@ -8,18 +8,10 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
-import javax.lang.model.type.ErrorType;
-import javax.lang.model.type.ExecutableType;
-import javax.lang.model.type.NoType;
-import javax.lang.model.type.NullType;
-import javax.lang.model.type.PrimitiveType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
-import javax.lang.model.type.TypeVariable;
-import javax.lang.model.type.TypeVisitor;
-import javax.lang.model.type.WildcardType;
+import javax.lang.model.util.SimpleTypeVisitor6;
 import javax.tools.Diagnostic;
 import javax.tools.FileObject;
 import javax.tools.StandardLocation;
@@ -36,278 +28,197 @@ import aQute.bnd.annotation.metatype.Meta.AD;
 import aQute.bnd.annotation.metatype.Meta.OCD;
 
 public class MetatypeExporter {
-	private static final String JAVA_LANG = "java.lang.";
+  private static final String JAVA_LANG = "java.lang.";
 
-	private org.jdom.Element metaData = null;
-	private String className = null;
-	private String componentPid;
+  private org.jdom.Element    metaData  = null;
 
-	public MetatypeExporter(TypeElement mainClass, String componentPid,
-			String designateClassName, ProcessingEnvironment processingEnv) {
-		TypeElement designateType = getDesignateType(mainClass,
-				designateClassName);
-		className = mainClass.toString();
-		this.componentPid = componentPid;
+  private String              className = null;
 
-		if (designateType != null) {
-			metaData = new org.jdom.Element("MetaData", Namespace.getNamespace(
-					"metatype", "http://www.osgi.org/xmlns/metatype/v1.1.0"));
-			analyzeDesignateType(designateType);
-			exportXml(processingEnv);
-		}
-	}
+  private String              componentPid;
 
-	private void analyzeConfigElement(Element element, AD ad,
-			org.jdom.Element ocdElement) {
-		org.jdom.Element adElement = new org.jdom.Element("AD");
+  public MetatypeExporter(TypeElement mainClass, String componentPid, String designateClassName,
+      ProcessingEnvironment processingEnv) {
+    TypeElement designateType = getDesignateType(mainClass, designateClassName);
+    className = mainClass.toString();
+    this.componentPid = componentPid;
 
-		if (!ad.name().equals(Meta.NULL)) {
-			adElement.setAttribute("name", ad.name());
-		} else {
-			adElement.setAttribute("name", element.getSimpleName().toString());
-		}
-		adElement.setAttribute("id", element.getSimpleName().toString());
-		ExecutableElement executable = (ExecutableElement) element;
-		TypeMirror typeMirror = executable.getReturnType();
-		String typeName = typeMirror.toString();
+    if (designateType != null) {
+      metaData = new org.jdom.Element("MetaData", Namespace.getNamespace("metatype",
+          "http://www.osgi.org/xmlns/metatype/v1.1.0"));
+      analyzeDesignateType(designateType);
+      exportXml(processingEnv);
+    }
+  }
 
-		if (typeName.startsWith(JAVA_LANG)) {
-			adElement.setAttribute("type",
-					typeName.substring(JAVA_LANG.length()));
-		} else if (typeName.equals("int")) {
-			adElement.setAttribute("type", "Integer");
-		} else if (typeName.equals("long")) {
-			adElement.setAttribute("type", "Long");
-		} else if (typeName.equals("char")) {
-			adElement.setAttribute("type", "Char");
-		} else if (typeName.equals("byte")) {
-			adElement.setAttribute("type", "Byte");
-		} else if (typeName.equals("double")) {
-			adElement.setAttribute("type", "Double");
-		} else if (typeName.equals("float")) {
-			adElement.setAttribute("type", "Float");
-		} else if (typeName.equals("short")) {
-			adElement.setAttribute("type", "Short");
-		} else if (typeName.equals("boolean")) {
-			adElement.setAttribute("type", "Boolean");
-		} else {
-			adElement.setAttribute("type", "String");
-			TypeKind kind = typeMirror.getKind();
-			typeMirror.accept(new EnumVisitor(adElement), null);
-			// System.out.println("Unbekannter Type für: " + element + ": " +
-			// typeName);
-		}
-		if (!ad.description().equals(Meta.NULL)) {
-			adElement.setAttribute("description", ad.description());
-		}
-		if (!ad.deflt().equals(Meta.NULL)) {
-			adElement.setAttribute("default", ad.deflt());
-		}
-		if (!ad.min().equals(Meta.NULL)) {
-			adElement.setAttribute("min", ad.min());
-		}
-		if (!ad.max().equals(Meta.NULL)) {
-			adElement.setAttribute("max", ad.max());
-		}
-		if (ad.cardinality() > 0) {
-			adElement.setAttribute("cardinality", "" + ad.cardinality());
-		}
-		if (ad.required()) {
-			adElement.setAttribute("required", "true");
-		}
+  private void analyzeConfigElement(Element element, AD ad, org.jdom.Element ocdElement) {
+    org.jdom.Element adElement = new org.jdom.Element("AD");
 
-		ocdElement.getContent().add(adElement);
-	}
+    if (!ad.name().equals(Meta.NULL)) {
+      adElement.setAttribute("name", ad.name());
+    } else {
+      adElement.setAttribute("name", element.getSimpleName().toString());
+    }
+    adElement.setAttribute("id", element.getSimpleName().toString());
+    ExecutableElement executable = (ExecutableElement) element;
+    TypeMirror typeMirror = executable.getReturnType();
+    String typeName = typeMirror.toString();
 
-	private void analyzeDesignateType(TypeElement designateType) {
-		OCD ocd = designateType.getAnnotation(OCD.class);
-		org.jdom.Element ocdElement = new org.jdom.Element("OCD");
-		if (!ocd.name().equals(Meta.NULL)) {
-			ocdElement.setAttribute("name", ocd.name());
-		} else {
-			ocdElement.setAttribute("name", designateType.toString());
-		}
-		ocdElement.setAttribute("id", className);
+    if (typeName.startsWith(JAVA_LANG)) {
+      adElement.setAttribute("type", typeName.substring(JAVA_LANG.length()));
+    } else if (typeName.equals("int")) {
+      adElement.setAttribute("type", "Integer");
+    } else if (typeName.equals("long")) {
+      adElement.setAttribute("type", "Long");
+    } else if (typeName.equals("char")) {
+      adElement.setAttribute("type", "Char");
+    } else if (typeName.equals("byte")) {
+      adElement.setAttribute("type", "Byte");
+    } else if (typeName.equals("double")) {
+      adElement.setAttribute("type", "Double");
+    } else if (typeName.equals("float")) {
+      adElement.setAttribute("type", "Float");
+    } else if (typeName.equals("short")) {
+      adElement.setAttribute("type", "Short");
+    } else if (typeName.equals("boolean")) {
+      adElement.setAttribute("type", "Boolean");
+    } else {
+      adElement.setAttribute("type", "String");
+      TypeKind kind = typeMirror.getKind();
+      typeMirror.accept(new EnumVisitor(adElement), null);
+      // System.out.println("Unbekannter Type für: " + element + ": " +
+      // typeName);
+    }
+    if (!ad.description().equals(Meta.NULL)) {
+      adElement.setAttribute("description", ad.description());
+    }
+    if (!ad.deflt().equals(Meta.NULL)) {
+      adElement.setAttribute("default", ad.deflt());
+    }
+    if (!ad.min().equals(Meta.NULL)) {
+      adElement.setAttribute("min", ad.min());
+    }
+    if (!ad.max().equals(Meta.NULL)) {
+      adElement.setAttribute("max", ad.max());
+    }
+    if (ad.cardinality() > 0) {
+      adElement.setAttribute("cardinality", "" + ad.cardinality());
+    }
+    if (ad.required()) {
+      adElement.setAttribute("required", "true");
+    }
 
-		// if( !ocd.id().equals(Meta.NULL)) {
-		// ocdElement.setAttribute("id", ocd.id() );
-		// }
-		if (!ocd.description().equals(Meta.NULL)) {
-			ocdElement.setAttribute("description", ocd.description());
-		}
-		metaData.getContent().add(ocdElement);
+    ocdElement.getContent().add(adElement);
+  }
 
-		for (Element element : designateType.getEnclosedElements()) {
-			AD ad = element.getAnnotation(AD.class);
-			if (ad != null) {
-				analyzeConfigElement(element, ad, ocdElement);
-			}
-		}
-		org.jdom.Element designateElement = new org.jdom.Element("Designate");
-		designateElement.setAttribute("pid", componentPid);
-		org.jdom.Element designateObjectElement = new org.jdom.Element("Object");
-		designateObjectElement.setAttribute("ocdref", componentPid);
-		designateElement.getContent().add(designateObjectElement);
-		metaData.getContent().add(designateElement);
+  private void analyzeDesignateType(TypeElement designateType) {
+    OCD ocd = designateType.getAnnotation(OCD.class);
+    org.jdom.Element ocdElement = new org.jdom.Element("OCD");
+    if (!ocd.name().equals(Meta.NULL)) {
+      ocdElement.setAttribute("name", ocd.name());
+    } else {
+      ocdElement.setAttribute("name", designateType.toString());
+    }
+    ocdElement.setAttribute("id", className);
 
-	}
+    // if( !ocd.id().equals(Meta.NULL)) {
+    // ocdElement.setAttribute("id", ocd.id() );
+    // }
+    if (!ocd.description().equals(Meta.NULL)) {
+      ocdElement.setAttribute("description", ocd.description());
+    }
+    metaData.getContent().add(ocdElement);
 
-	private void exportXml(ProcessingEnvironment processingEnv) {
-		Document doc = new Document();
-		doc.addContent(new Comment(
-				"Generated by MetatypeExporter - Do not edit"));
-		doc.setRootElement(metaData);
+    for (Element element : designateType.getEnclosedElements()) {
+      AD ad = element.getAnnotation(AD.class);
+      if (ad != null) {
+        analyzeConfigElement(element, ad, ocdElement);
+      }
+    }
+    org.jdom.Element designateElement = new org.jdom.Element("Designate");
+    designateElement.setAttribute("pid", componentPid);
+    org.jdom.Element designateObjectElement = new org.jdom.Element("Object");
+    designateObjectElement.setAttribute("ocdref", componentPid);
+    designateElement.getContent().add(designateObjectElement);
+    metaData.getContent().add(designateElement);
 
-		XMLOutputter fmt = new XMLOutputter();
-		Format format = Format.getPrettyFormat();
-		format.setIndent("    ");
-		fmt.setFormat(format);
+  }
 
-		OutputStream os = null;
-		try {
-			String fileName = "metatype/" + className + ".xml";
+  private void exportXml(ProcessingEnvironment processingEnv) {
+    Document doc = new Document();
+    doc.addContent(new Comment("Generated by MetatypeExporter - Do not edit"));
+    doc.setRootElement(metaData);
 
-			DsResourceListener.get().addObservedResource(fileName);
-			final FileObject fo = processingEnv.getFiler().createResource(
-					StandardLocation.SOURCE_OUTPUT, "", fileName);
-			os = fo.openOutputStream();
+    XMLOutputter fmt = new XMLOutputter();
+    Format format = Format.getPrettyFormat();
+    format.setIndent("    ");
+    fmt.setFormat(format);
 
-			fmt.output(doc, os);
-			processingEnv.getMessager().printMessage(Diagnostic.Kind.NOTE,
-					"MetatypeExporter erzeugt: " + fo.toUri());
+    OutputStream os = null;
+    try {
+      String fileName = "metatype/" + className + ".xml";
 
-		} catch (Throwable e1) {
+      DsResourceListener.get().addObservedResource(fileName);
+      final FileObject fo = processingEnv.getFiler().createResource(StandardLocation.SOURCE_OUTPUT, "", fileName);
+      os = fo.openOutputStream();
 
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		} finally {
-			try {
-				os.close();
-			} catch (IOException e) {
+      fmt.output(doc, os);
+      processingEnv.getMessager().printMessage(Diagnostic.Kind.NOTE, "MetatypeExporter erzeugt: " + fo.toUri());
 
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
-	}
+    } catch (Throwable e1) {
 
-	private TypeElement getDesignateType(TypeElement mainClass,
-			String designateClassName) {
-		if (designateClassName != null) {
-			for (Element subElement : mainClass.getEnclosedElements()) {
-				System.out.println("Suche DesignateType SubElement: "
-						+ subElement.toString());
-				if (subElement.toString().equals(designateClassName)) {
-					return (TypeElement) subElement;
-				}
-			}
-		}
-		return null;
-	}
+      // TODO Auto-generated catch block
+      e1.printStackTrace();
+    } finally {
+      try {
+        os.close();
+      } catch (IOException e) {
 
-	class EnumVisitor implements TypeVisitor {
+        // TODO Auto-generated catch block
+        e.printStackTrace();
+      }
+    }
+  }
 
-		private org.jdom.Element adElement;
+  private TypeElement getDesignateType(TypeElement mainClass, String designateClassName) {
+    if (designateClassName != null) {
+      for (Element subElement : mainClass.getEnclosedElements()) {
+        System.out.println("Suche DesignateType SubElement: " + subElement.toString());
+        if (subElement.toString().equals(designateClassName)) {
+          return (TypeElement) subElement;
+        }
+      }
+    }
+    return null;
+  }
 
-		public EnumVisitor(org.jdom.Element adElement) {
-			this.adElement = adElement;
-		}
+  class EnumVisitor extends SimpleTypeVisitor6<Void, Void> {
 
-		@Override
-		public Object visit(TypeMirror t, Object p) {
+    private org.jdom.Element adElement;
 
-			// TODO Auto-generated method stub
-			return null;
-		}
+    public EnumVisitor(org.jdom.Element adElement) {
+      this.adElement = adElement;
+    }
 
-		@Override
-		public Object visit(TypeMirror t) {
+    @Override
+    public Void visitDeclared(DeclaredType t, Void arg1) {
+      System.out.println("visitDeclared: " + t);
+      Element element = t.asElement();
+      if (element.getKind() == ElementKind.ENUM) {
+        System.out.println("Enum: " + element);
+        adElement.setAttribute("cardinality", "0");
 
-			// TODO Auto-generated method stub
-			return null;
-		}
+        for (Element subElement : element.getEnclosedElements()) {
+          if (subElement.getKind() == ElementKind.ENUM_CONSTANT) {
+            System.out.println("Enum-Constant: " + subElement);
+            org.jdom.Element option = new org.jdom.Element("Option");
+            option.setAttribute("label", subElement.toString());
+            option.setAttribute("value", subElement.toString());
+            adElement.getContent().add(option);
+          }
+        }
+      }
+      return null;
+    }
+  }
 
-		@Override
-		public Object visitPrimitive(PrimitiveType t, Object p) {
-			return null;
-		}
-
-		@Override
-		public Object visitNull(NullType t, Object p) {
-
-			// TODO Auto-generated method stub
-			return null;
-		}
-
-		@Override
-		public Object visitArray(ArrayType t, Object p) {
-
-			// TODO Auto-generated method stub
-			return null;
-		}
-
-		@Override
-		public Object visitDeclared(DeclaredType t, Object p) {
-			System.out.println("visitDeclared: " + t);
-			Element element = t.asElement();
-			if (element.getKind() == ElementKind.ENUM) {
-				System.out.println("Enum: " + element);
-				adElement.setAttribute("cardinality", "0");
-
-				for (Element subElement : element.getEnclosedElements()) {
-					if (subElement.getKind() == ElementKind.ENUM_CONSTANT) {
-						System.out.println("Enum-Constant: " + subElement);
-						org.jdom.Element option = new org.jdom.Element("Option");
-						option.setAttribute("label", subElement.toString());
-						option.setAttribute("value", subElement.toString());
-						adElement.getContent().add(option);
-					}
-				}
-			}
-
-			// TODO Auto-generated method stub
-			return null;
-		}
-
-		@Override
-		public Object visitError(ErrorType t, Object p) {
-
-			// TODO Auto-generated method stub
-			return null;
-		}
-
-		@Override
-		public Object visitTypeVariable(TypeVariable t, Object p) {
-			System.out.println("visitTypeVariable: " + t);
-			return null;
-		}
-
-		@Override
-		public Object visitWildcard(WildcardType t, Object p) {
-
-			// TODO Auto-generated method stub
-			return null;
-		}
-
-		@Override
-		public Object visitExecutable(ExecutableType t, Object p) {
-
-			// TODO Auto-generated method stub
-			return null;
-		}
-
-		@Override
-		public Object visitNoType(NoType t, Object p) {
-
-			// TODO Auto-generated method stub
-			return null;
-		}
-
-		@Override
-		public Object visitUnknown(TypeMirror t, Object p) {
-
-			// TODO Auto-generated method stub
-			return null;
-		}
-	}
 }
