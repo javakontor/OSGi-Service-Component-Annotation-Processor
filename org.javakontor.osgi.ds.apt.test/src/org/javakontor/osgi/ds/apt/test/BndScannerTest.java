@@ -25,4 +25,11 @@ public class BndScannerTest extends AbstractAptTest {
     assertDsXmlEquals("ComponentWithoutService");
   }
 
+  @Test
+  public void test_ComponentProvidingInterfaceFromSuperclass() throws Exception {
+    compile("ComponentProvidingInterfaceFromSuperclass");
+
+    assertDsXmlEquals("ComponentProvidingInterfaceFromSuperclass");
+  }
+
 }

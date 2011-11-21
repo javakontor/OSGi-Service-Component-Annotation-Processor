@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<scr:component xmlns:scr='http://www.osgi.org/xmlns/scr/v1.1.0' name='org.javakontor.osgi.ds.apt.test.cases.ComponentProvidingInterfaceFromSuperclass' activate='start'>
+  <implementation class='org.javakontor.osgi.ds.apt.test.cases.ComponentProvidingInterfaceFromSuperclass'/>
+  <service>
+    <provide interface='java.util.Map'/>
+  </service>
+</scr:component>
