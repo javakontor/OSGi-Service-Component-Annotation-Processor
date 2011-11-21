@@ -1,4 +1,4 @@
-package org.javakontor.ds.apt.base;
+package org.javakontor.ds.apt.exporter;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -9,7 +9,7 @@ import javax.tools.Diagnostic;
 import javax.tools.FileObject;
 import javax.tools.StandardLocation;
 
-import org.javakontor.ds.DsResourceListener;
+import org.javakontor.ds.eclipse.DsResourceListener;
 import org.jdom.Comment;
 import org.jdom.Document;
 import org.jdom.Namespace;

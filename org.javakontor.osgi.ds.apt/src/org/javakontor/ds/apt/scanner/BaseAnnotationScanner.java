@@ -1,4 +1,4 @@
-package org.javakontor.ds.apt.base;
+package org.javakontor.ds.apt.scanner;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
@@ -6,6 +6,13 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.ElementScanner6;
 
+import org.javakontor.ds.apt.exporter.DsXmlExporter;
+
+/**
+ * Provides common functionality for both OSGi- and bnd-Annotations scanner
+ * 
+ * 
+ */
 public class BaseAnnotationScanner extends ElementScanner6<Void, Void> {
   protected DsXmlExporter         dsXmlExporter;
 

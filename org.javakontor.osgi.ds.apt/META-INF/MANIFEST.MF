@@ -6,7 +6,7 @@ Bundle-Version: 1.0.0.qualifier
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Bundle-ClassPath: lib/jdom.jar,
  .
-Bundle-Activator: org.javakontor.ds.DsActivator
+Bundle-Activator: org.javakontor.ds.eclipse.DsActivator
 Bundle-ActivationPolicy: lazy
 Import-Package: aQute.bnd.annotation.component;version="1.43.1",
  aQute.bnd.annotation.metatype;version="1.43.1",

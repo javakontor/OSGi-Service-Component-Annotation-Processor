@@ -1,4 +1,10 @@
-package org.javakontor.ds.apt;
+package org.javakontor.ds.apt.scanner;
+
+import aQute.bnd.annotation.component.Activate;
+import aQute.bnd.annotation.component.Component;
+import aQute.bnd.annotation.component.ConfigurationPolicy;
+import aQute.bnd.annotation.component.Deactivate;
+import aQute.bnd.annotation.component.Reference;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -11,49 +17,50 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeMirror;
 import javax.tools.Diagnostic;
 
-import org.javakontor.ds.apt.base.AnnotationInfos;
-import org.javakontor.ds.apt.base.BaseAnnotationScanner;
-import org.javakontor.ds.apt.base.ElementInfos;
-import org.osgi.service.component.annotations.Activate;
-import org.osgi.service.component.annotations.Component;
-import org.osgi.service.component.annotations.ConfigurationPolicy;
-import org.osgi.service.component.annotations.Deactivate;
-import org.osgi.service.component.annotations.Reference;
+import org.javakontor.ds.apt.exporter.MetatypeExporter;
+import org.javakontor.ds.apt.scanner.infos.AnnotationInfos;
+import org.javakontor.ds.apt.scanner.infos.ElementInfos;
 
-public class OsgiAnnotationScanner extends BaseAnnotationScanner {
-	public OsgiAnnotationScanner(ProcessingEnvironment processingEnv) {
+public class BndAnnotationScanner extends BaseAnnotationScanner {
+	public BndAnnotationScanner(ProcessingEnvironment processingEnv) {
 		super(processingEnv);
 	}
 
 	@Override
 	public Void visitType(TypeElement e, Void p) {
-		dsXmlExporter.addImplementation(e.toString());
 
 		Component componentAnnotation = e.getAnnotation(Component.class);
 
 		if (componentAnnotation != null) {
+			dsXmlExporter.addImplementation(e.toString());
 			ElementInfos elementInfos = new ElementInfos(e);
 			AnnotationInfos annotationInfos = elementInfos
 					.getAnnotationInfos(Component.class);
 			String[] provideValues = annotationInfos
-					.getArrayAsStrings("service");
+					.getArrayAsStrings("provide");
 
 			dsXmlExporter.setClassName(e.toString());
-			String name = componentAnnotation.name();
-			if (name.length() > 0) {
-				dsXmlExporter.setComponentAttribute("name", name);
+			String componentPid;
+			if (componentAnnotation.name().length() > 0) {
+				componentPid = componentAnnotation.name();
+				dsXmlExporter.setComponentAttribute("name",
+						componentAnnotation.name());
 			} else {
+				componentPid = e.toString();
 				dsXmlExporter.setComponentAttribute("name", e.toString());
 			}
 
+			String designateClassName = annotationInfos
+					.getStringValue("designate");
+			if (designateClassName != null) {
+				new MetatypeExporter(e, componentPid, designateClassName,
+						processingEnv);
+			}
 			List<String> interfaces = new ArrayList<String>();
 			if (provideValues.length == 0) {
 
-				// If no service should be registered, the empty value {} must
-				// be specified.
-				// If not specified, the service types for this Component are
-				// all the directly implemented interfaces of the class
-				// being annotated.
+				// Service interfaces, the default is all directly implemented
+				// interfaces
 				if (annotationInfos.getStringValue("service") == null) {
 					for (TypeMirror mirror : e.getInterfaces()) {
 						interfaces.add(mirror.toString());
@@ -93,9 +100,9 @@ public class OsgiAnnotationScanner extends BaseAnnotationScanner {
 			}
 			ConfigurationPolicy configurationPolicy = componentAnnotation
 					.configurationPolicy();
-			if (configurationPolicy != ConfigurationPolicy.OPTIONAL) {
+			if (configurationPolicy != ConfigurationPolicy.optional) {
 				dsXmlExporter.setComponentAttribute("configuration-policy",
-						configurationPolicy.value());
+						configurationPolicy.toString());
 			}
 
 			for (String property : componentAnnotation.properties()) {
@@ -115,6 +122,10 @@ public class OsgiAnnotationScanner extends BaseAnnotationScanner {
 			if (referenceAnnotation != null) {
 				String serviceInterface = e.getParameters().get(0).asType()
 						.toString();
+				boolean dynamicReference = referenceAnnotation.dynamic();
+				boolean optionalReference = referenceAnnotation.optional();
+				boolean multipleReference = referenceAnnotation.multiple();
+				char type = referenceAnnotation.type();
 
 				ElementInfos elementInfos = new ElementInfos(e);
 				AnnotationInfos annotationInfos = elementInfos
@@ -125,8 +136,46 @@ public class OsgiAnnotationScanner extends BaseAnnotationScanner {
 					serviceInterface = serviceName;
 				}
 
-				String cardinality = referenceAnnotation.cardinality().value();
-				String policy = referenceAnnotation.policy().value();
+				String cardinality = "1..1";
+				String policy = "static";
+
+				switch (type) {
+
+				case '?':
+					policy = "dynamic";
+					cardinality = "0..1";
+					break;
+
+				case '*':
+					policy = "dynamic";
+					cardinality = "0..n";
+					break;
+
+				case '+':
+					policy = "dynamic";
+					cardinality = "1..n";
+					break;
+
+				case '~':
+					cardinality = "0..1";
+					break;
+
+				case ' ':
+					cardinality = "1..1";
+					break;
+
+				default:
+					if (dynamicReference) {
+						policy = "dynamic";
+					}
+					if (!multipleReference && optionalReference) {
+						cardinality = "0..1";
+					} else if (multipleReference && optionalReference) {
+						cardinality = "0..n";
+					} else if (multipleReference && !optionalReference) {
+						cardinality = "1..n";
+					}
+				}
 				Element unbindMethod = getUnbindMethod(e,
 						referenceAnnotation.unbind());
 				dsXmlExporter.addReference(serviceInterface, policy,

@@ -1,4 +1,4 @@
-package org.javakontor.ds.apt.base;
+package org.javakontor.ds.apt.scanner.infos;
 
 import java.lang.annotation.Annotation;
 import java.util.Collection;

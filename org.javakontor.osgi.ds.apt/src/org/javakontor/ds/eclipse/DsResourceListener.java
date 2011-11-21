@@ -1,4 +1,4 @@
-package org.javakontor.ds;
+package org.javakontor.ds.eclipse;
 
 import java.util.HashSet;
 import java.util.Set;

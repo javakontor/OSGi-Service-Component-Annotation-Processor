@@ -12,6 +12,9 @@ import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 
+import org.javakontor.ds.apt.scanner.BndAnnotationScanner;
+import org.javakontor.ds.apt.scanner.OsgiAnnotationScanner;
+
 @SupportedAnnotationTypes(value = { "aQute.bnd.annotation.component.*",
 		"org.osgi.service.component.annotations.*" })
 @SupportedSourceVersion(SourceVersion.RELEASE_6)

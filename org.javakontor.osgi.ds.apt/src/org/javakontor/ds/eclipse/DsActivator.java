@@ -1,4 +1,4 @@
-package org.javakontor.ds;
+package org.javakontor.ds.eclipse;
 
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
