@@ -12,7 +12,7 @@ Build server containing development jars:
 http://hudson.nilshartmann.net/job/OSGi-Service-Component-Annotation-Processor/
 
 Update site (from latest build):
-http://jenkins.nilshartmann.net/updatesites/ds-apt
+http://p2.nilshartmann.net/updatesites/ds-apt
 
 
 
