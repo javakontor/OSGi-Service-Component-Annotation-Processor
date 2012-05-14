@@ -16,18 +16,18 @@ import org.junit.Test;
  * @author Nils Hartmann (nils@nilshartmann.net)
  * 
  */
-public class BndScannerTest extends AbstractAptTest {
+public class OSGiScannerTest extends AbstractAptTest {
 
   @Test
   public void test_ComponentWithoutService() throws Exception {
-    compile("bnd/ComponentWithoutService");
+    compile("osgi/ComponentWithoutService");
 
     assertDsXmlEquals("ComponentWithoutService");
   }
 
   @Test
   public void test_ComponentProvidingInterfaceFromSuperclass() throws Exception {
-    compile("bnd/ComponentProvidingInterfaceFromSuperclass");
+    compile("osgi/ComponentProvidingInterfaceFromSuperclass");
 
     assertDsXmlEquals("ComponentProvidingInterfaceFromSuperclass");
   }

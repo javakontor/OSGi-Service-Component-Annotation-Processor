@@ -1,4 +1,4 @@
-package org.javakontor.osgi.ds.apt.test.cases;
+package org.javakontor.osgi.ds.apt.test.cases.bnd;
 
 import java.util.Map;
 
