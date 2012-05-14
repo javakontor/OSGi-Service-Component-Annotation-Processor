@@ -1,4 +1,4 @@
-package org.javakontor.osgi.ds.apt.test.cases;
+package org.javakontor.osgi.ds.apt.test.cases.bnd;
 
 import java.util.Hashtable;
 import java.util.Map;
@@ -12,6 +12,10 @@ import aQute.bnd.annotation.component.Component;
  */
 @Component(provide = Map.class)
 public class ComponentProvidingInterfaceFromSuperclass extends Hashtable<Object, Object> {
+
+  public class Toto {
+
+  }
 
   /**
    * 
