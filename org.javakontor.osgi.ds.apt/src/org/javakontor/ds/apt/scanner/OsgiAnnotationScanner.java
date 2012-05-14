@@ -9,7 +9,6 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeMirror;
-import javax.tools.Diagnostic;
 
 import org.javakontor.ds.apt.scanner.infos.AnnotationInfos;
 import org.javakontor.ds.apt.scanner.infos.ElementInfos;
@@ -26,11 +25,12 @@ public class OsgiAnnotationScanner extends BaseAnnotationScanner {
 
 	@Override
 	public Void visitType(TypeElement e, Void p) {
-		dsXmlExporter.addImplementation(e.toString());
 
 		Component componentAnnotation = e.getAnnotation(Component.class);
 
 		if (componentAnnotation != null) {
+			dsXmlExporter.addImplementation(e.toString());
+
 			ElementInfos elementInfos = new ElementInfos(e);
 			AnnotationInfos annotationInfos = elementInfos
 					.getAnnotationInfos(Component.class);
@@ -60,20 +60,7 @@ public class OsgiAnnotationScanner extends BaseAnnotationScanner {
 				}
 			} else {
 				for (String provideInterface : provideValues) {
-					boolean foundInterface = false;
-					for (TypeMirror mirror : e.getInterfaces()) {
-						if (provideInterface.equals(mirror.toString())) {
-							interfaces.add(provideInterface);
-							foundInterface = true;
-						}
-					}
-					if (!foundInterface) {
-						processingEnv.getMessager().printMessage(
-								Diagnostic.Kind.ERROR,
-								"Class does not implement declared interface \""
-										+ provideInterface + "\"", e);
-						errorsFound = true;
-					}
+					interfaces.add(provideInterface);
 				}
 			}
 			if (interfaces.size() > 0) {
@@ -97,7 +84,7 @@ public class OsgiAnnotationScanner extends BaseAnnotationScanner {
 						configurationPolicy.value());
 			}
 
-			for (String property : componentAnnotation.properties()) {
+			for (String property : componentAnnotation.property()) {
 				dsXmlExporter.addProperty(property);
 			}
 
