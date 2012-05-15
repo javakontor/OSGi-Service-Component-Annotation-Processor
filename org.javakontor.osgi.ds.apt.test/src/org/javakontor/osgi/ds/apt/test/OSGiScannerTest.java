@@ -22,14 +22,21 @@ public class OSGiScannerTest extends AbstractAptTest {
   public void test_ComponentWithoutService() throws Exception {
     compile("osgi/ComponentWithoutService");
 
-    assertDsXmlEquals("ComponentWithoutService");
+    assertDsXmlEquals("osgi.ComponentWithoutService");
   }
 
   @Test
   public void test_ComponentProvidingInterfaceFromSuperclass() throws Exception {
     compile("osgi/ComponentProvidingInterfaceFromSuperclass");
 
-    assertDsXmlEquals("ComponentProvidingInterfaceFromSuperclass");
+    assertDsXmlEquals("osgi.ComponentProvidingInterfaceFromSuperclass");
+  }
+
+  @Test
+  public void test_ComponentNotEnabled() throws Exception {
+    compile("osgi/ComponentNotEnabled");
+
+    assertDsXmlEquals("osgi.ComponentNotEnabled");
   }
 
 }

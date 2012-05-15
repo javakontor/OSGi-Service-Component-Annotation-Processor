@@ -1,4 +1,0 @@
-<?xml version='1.0' encoding='utf-8'?>
-<scr:component xmlns:scr='http://www.osgi.org/xmlns/scr/v1.1.0' name='org.javakontor.osgi.ds.apt.test.cases.ComponentWithoutService' activate='activate'>
-  <implementation class='org.javakontor.osgi.ds.apt.test.cases.ComponentWithoutService'/>
-</scr:component>
