@@ -73,9 +73,14 @@ public class OsgiAnnotationScanner extends BaseAnnotationScanner {
 			dsXmlExporter.setComponentAttribute("deactivate",
 					getDeactivateMethod(e, Deactivate.class));
 
-			Boolean immediate = componentAnnotation.immediate();
+			boolean immediate = componentAnnotation.immediate();
 			if (immediate) {
 				dsXmlExporter.setComponentAttribute("immediate", "true");
+			}
+
+			boolean enabled = componentAnnotation.enabled();
+			if (!enabled) {
+				dsXmlExporter.setComponentAttribute("enabled", "false");
 			}
 			ConfigurationPolicy configurationPolicy = componentAnnotation
 					.configurationPolicy();
