@@ -22,14 +22,21 @@ public class BndScannerTest extends AbstractAptTest {
   public void test_ComponentWithoutService() throws Exception {
     compile("bnd/ComponentWithoutService");
 
-    assertDsXmlEquals("ComponentWithoutService");
+    assertDsXmlEquals("bnd.ComponentWithoutService");
   }
 
   @Test
   public void test_ComponentProvidingInterfaceFromSuperclass() throws Exception {
     compile("bnd/ComponentProvidingInterfaceFromSuperclass");
 
-    assertDsXmlEquals("ComponentProvidingInterfaceFromSuperclass");
+    assertDsXmlEquals("bnd.ComponentProvidingInterfaceFromSuperclass");
+  }
+
+  @Test
+  public void test_ComponentNotEnabled() throws Exception {
+    compile("bnd/ComponentNotEnabled");
+
+    assertDsXmlEquals("bnd.ComponentNotEnabled");
   }
 
 }
